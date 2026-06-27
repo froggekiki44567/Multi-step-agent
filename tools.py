@@ -1,10 +1,11 @@
+from typing import Optional
 import yfinance as yf
 import time
 
 _cache: dict[str, dict] = {}
 _CACHE_TTL = 300
 
-def get_ticket_info(ticker: str) -> dict | None:
+def get_ticker_info(ticker: str) -> Optional[dict]:
 
     ticker = ticker.upper().strip()
     cached = _cache.get(ticker)

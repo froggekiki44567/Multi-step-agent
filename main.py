@@ -1,8 +1,8 @@
-from tools import get_ticket_info
+from tools import get_ticker_info
 
-info = get_ticket_info("AAPL")
+info = get_ticker_info("AAPL")
 
 if info:
-    print("Ticket Info:", info)
+    print("Ticker Info:", info)
 else:
     print("No information found for the given ticker.")
