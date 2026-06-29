@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 import yfinance as yf
 import time
 
@@ -123,4 +123,21 @@ def query_financials(ticker: str) -> dict[str, Any]:
         "fiscal_year":   info.get("mostRecentQuarter", "N/A"),
         "note": "All _M values in millions of the company's reporting currency.",
     }
+
+def calculate(expression: str) -> dict[str, Any]:
+    allowed_chars = set("0123456789+-*/.() ")
+    clean = expression.replace("**", "##POW##")
+    clean = clean.replace("##POW##", "**")
+
+    if not all(c in allowed_chars or c == "*" for c in clean):
+        return {"error": "Expression contains disallowed characters.", "expression": expression}
+
+    try:
+        result = eval(expression, {"__builtins__": {}}, {"round": round, "abs": abs})
+        return {
+            "expression": expression,
+            "result":     round(float(result), 4),
+        }
+    except Exception as e:
+        return {"error": str(e), "expression": expression}
     
