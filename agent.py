@@ -21,3 +21,28 @@ class AgentResponse:
     iterations: int = 0
     latency_ms: float = 0.0
     error: Optional[str] = None
+
+_TOOL_BLOCK_RE = re.compile(
+    r"```tool_call\s*\n(\{.*?\})\s*\n```",
+    re.DOTALL,
+)
+
+
+def parse_tool_call(text: str) -> Optional[dict]:
+    """Extract the first tool_call JSON block from LLM output."""
+    match = _TOOL_BLOCK_RE.search(text)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return None
+
+
+def extract_final_answer(text: str) -> Optional[str]:
+    """Extract everything after 'FINAL ANSWER:' marker."""
+    marker = "FINAL ANSWER:"
+    idx = text.find(marker)
+    if idx == -1:
+        return None
+    return text[idx + len(marker):].strip()
