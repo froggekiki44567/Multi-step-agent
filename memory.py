@@ -90,3 +90,18 @@ Output your final answer prefixed with: FINAL ANSWER:"""
                         )
                         self.messages.insert(1, notice)
                     break
+    
+    def stats(self) -> dict:
+        return {
+            "turns": self.turn_count,
+            "messages_in_window": len(self.messages),
+            "token_estimate": self.get_token_estimate(),
+            "tool_calls_total": self.tool_calls_total,
+            "budget_used_pct": round(self.get_token_estimate() / self.max_tokens * 100, 1),
+        }
+
+    def reset(self):
+        self.messages.clear()
+        self.turn_count = 0
+        self.tool_calls_total = 0
+        self._add_system()
