@@ -46,3 +46,26 @@ TOOL USAGE FORMAT — when you want to call a tool, output EXACTLY this JSON blo
 ```
 After seeing a tool result, continue your reasoning until you can give a final answer.
 Output your final answer prefixed with: FINAL ANSWER:"""
+
+    def __init__(self, max_tokens: int = 6000):
+        self.max_tokens = max_tokens
+        self.messages: list[Message] = []
+        self.turn_count: int = 0
+        self.tool_calls_total: int = 0
+        self._add_system()
+
+    def _add_system(self):
+        self.messages.append(Message(role="system", content=self.SYSTEM_PROMPT))
+
+    def add_user(self, content: str):
+        self.turn_count += 1
+        self.messages.append(Message(role="user", content=content))
+        self._maybe_compress()
+
+    def add_assistant(self, content: str):
+        self.messages.append(Message(role="assistant", content=content))
+
+    def add_tool_result(self, tool_name: str, result: dict):
+        self.tool_calls_total += 1
+        content = f"[Tool: {tool_name}]\n{json.dumps(result, indent=2)}"
+        self.messages.append(Message(role="tool", content=content))
