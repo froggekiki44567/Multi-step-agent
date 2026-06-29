@@ -72,3 +72,12 @@ def print_response(resp: AgentResponse, show_trace: bool = False):
             print(dim(step))
 
     print()
+
+def print_memory_stats(agent: FinancialAgent):
+    stats = agent.memory_stats
+    print(dim(
+        f"[Memory: {stats['messages_in_window']} messages | "
+        f"~{stats['token_estimate']} tokens | "
+        f"{stats['budget_used_pct']}% of budget | "
+        f"{stats['tool_calls_total']} tool calls total]"
+    ))
