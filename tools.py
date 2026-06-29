@@ -252,3 +252,4 @@ def dispatch(tool_name: str, args: dict) -> dict:
     except TypeError as e:
         return {"error": f"Bad arguments for '{tool_name}': {e}"}
 
+
