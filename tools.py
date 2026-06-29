@@ -1,7 +1,7 @@
 from typing import Optional, Any
 import yfinance as yf
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 _cache: dict[str, dict] = {}
 _CACHE_TTL = 300
