@@ -153,3 +153,29 @@ def run_repl(agent: FinancialAgent):
         resp = agent.run(user_input)
         print_response(resp, show_trace)
         print_memory_stats(agent)
+
+def main():
+    parser = argparse.ArgumentParser(description="Financial Analysis Agent")
+    parser.add_argument("--demo",  action="store_true", help="Run preset demo questions")
+    parser.add_argument("--trace", action="store_true", help="Show full reasoning trace")
+    parser.add_argument("--query", type=str, help="Single query (non-interactive)")
+    args = parser.parse_args()
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        print(red("Error: ANTHROPIC_API_KEY environment variable not set."))
+        sys.exit(1)
+
+    print_header()
+    agent = FinancialAgent()
+
+    if args.query:
+        resp = agent.run(args.query)
+        print_response(resp, show_trace=args.trace)
+    elif args.demo:
+        run_demo(agent, show_trace=args.trace)
+    else:
+        run_repl(agent)
+
+
+if __name__ == "__main__":
+    main()
