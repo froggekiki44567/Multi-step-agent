@@ -73,3 +73,21 @@ class OutputQualityReport:
     hallucination_risk: str  # "low" | "medium" | "high"
     issues: list[str] = field(default_factory=list)
     suggestions: list[str] = field(default_factory=list)
+
+# Blogos frazes, kurios gali rodyti, kad atsakymas yra netikras arba nepatikimas
+_HALLUCINATION_SIGNALS = [
+    r"\b(approximately|roughly|around|about)\s+\$?\d",
+    r"\b(I believe|I think|I'm fairly sure|probably|likely)\b",
+    r"\bin \d{4}\b",                          # year claims not from tool output
+    r"\bsources (say|indicate|suggest)\b",    # vague attribution
+]
+
+_UNCERTAINTY_PHRASES = [
+    "based on available data",
+    "according to the retrieved",
+    "the tools indicate",
+    "from the query results",
+]
+
+# Numeris, kuris gali buti netikras arba nepatikimas
+_NUMBER_PATTERN = re.compile(r"\$?[\d,]+(?:\.\d+)?(?:\s*(?:million|billion|%|M|B))?")
