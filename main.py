@@ -4,6 +4,15 @@ import os
 import sys
 import time
 from textwrap import indent
+from pathlib import Path
+
+# Load .env file if it exists
+_env_path = Path(__file__).parent / ".env"
+if _env_path.exists():
+    for _line in _env_path.read_text().splitlines():
+        if "=" in _line and not _line.startswith("#"):
+            _k, _v = _line.split("=", 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
 
 from agent import FinancialAgent, AgentResponse
 
