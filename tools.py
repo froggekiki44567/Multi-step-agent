@@ -36,4 +36,53 @@ _EXCHANGE_RATES = {
     ("SEK", "EUR"): 0.0883,
     ("DKK", "EUR"): 0.134,
 }
+
+TOOL_SCHEMAS = [
+    {
+        "name": "query_financials",
+        "description": (
+            "Retrieve real financial metrics for any publicly traded company by ticker symbol. "
+            "Returns revenue, net income, EBITDA, total debt, cash, sector, and current price. "
+            "All figures in USD (most recent fiscal year). Uses live Yahoo Finance data."
+        ),
+        "parameters": {
+            "ticker": "string — company ticker, e.g. 'AAPL', 'MSFT', 'NOVO-B.CO', 'SEB-A.ST'"
+        },
+    },
+    {
+        "name": "calculate",
+        "description": (
+            "Evaluate a mathematical expression safely. "
+            "Use for ratios, growth rates, percentages. "
+            "Supports: +, -, *, /, **, round(), abs(). "
+            "Example: '(96995 / 394328) * 100' returns net margin %."
+        ),
+        "parameters": {
+            "expression": "string — math expression to evaluate"
+        },
+    },
+    {
+        "name": "get_exchange_rate",
+        "description": (
+            "Get the exchange rate between two currencies. "
+            "Returns rate to convert 1 unit of from_currency to to_currency. "
+            "Supported: USD, EUR, GBP, SEK, DKK."
+        ),
+        "parameters": {
+            "from_currency": "string — ISO 4217 code, e.g. 'USD', 'EUR'",
+            "to_currency":   "string — ISO 4217 code",
+        },
+    },
+    {
+        "name": "summarize_risk",
+        "description": (
+            "Assess financial risk profile of a publicly traded company. "
+            "Returns a risk score (0-100), risk tier (Low/Medium/High/Critical), "
+            "and specific risk flags based on live financial data."
+        ),
+        "parameters": {
+            "ticker": "string — company ticker to assess"
+        },
+    },
+]
     
