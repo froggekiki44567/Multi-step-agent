@@ -10,7 +10,7 @@ def _get_ticker_info(ticker: str) -> Optional[dict]:
 
     ticker = ticker.upper().strip()
     cached = _cache.get(ticker)
-    if cached and (time.time() - cached["timestamp"] < _CACHE_TTL):
+    if cached and (time.time() - cached["_ts"] < _CACHE_TTL):
         return cached
     
     try:
