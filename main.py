@@ -81,3 +81,10 @@ def print_memory_stats(agent: FinancialAgent):
         f"{stats['budget_used_pct']}% of budget | "
         f"{stats['tool_calls_total']} tool calls total]"
     ))
+
+DEMO_QUESTIONS = [
+    "What is Apple's net profit margin and how does it compare to Microsoft's?",
+    "Assess the financial risk of Goldman Sachs (GS). Should I be concerned?",
+    "Convert SEB bank's annual revenue from USD to EUR.",
+    "Compare the debt levels of AAPL and TSLA relative to their EBITDA.",
+]
