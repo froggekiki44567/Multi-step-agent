@@ -5,7 +5,7 @@ import time
 _cache: dict[str, dict] = {}
 _CACHE_TTL = 300
 
-def get_ticker_info(ticker: str) -> Optional[dict]:
+def _get_ticker_info(ticker: str) -> Optional[dict]:
 
     ticker = ticker.upper().strip()
     cached = _cache.get(ticker)
@@ -85,4 +85,42 @@ TOOL_SCHEMAS = [
         },
     },
 ]
+
+def query_financials(ticker: str) -> dict[str, Any]:
+    info = _get_ticker_info(ticker)
+    if info is None:
+        return {
+            "error": f"Could not fetch data for '{ticker}'. Check the ticker symbol.",
+            "hint": "Use standard Yahoo Finance tickers: 'AAPL', 'NOVO-B.CO', 'SEB-A.ST', etc.",
+        }
+
+    def _m(val):
+        """Convert to millions, round to 1dp."""
+        if val is None:
+            return None
+        return round(val / 1_000_000, 1)
+
+    revenue    = _m(info.get("totalRevenue"))
+    net_income = _m(info.get("netIncomeToCommon"))
+    ebitda     = _m(info.get("ebitda"))
+    total_debt = _m(info.get("totalDebt"))
+    cash       = _m(info.get("totalCash"))
+    price      = info.get("currentPrice") or info.get("regularMarketPrice")
+    mkt_cap    = _m(info.get("marketCap"))
+
+    return {
+        "ticker":      ticker.upper(),
+        "name":        info.get("shortName") or info.get("longName", "N/A"),
+        "sector":      info.get("sector", "N/A"),
+        "currency":    info.get("financialCurrency", "USD"),
+        "price":       price,
+        "market_cap_M":  mkt_cap,
+        "revenue_M":     revenue,
+        "net_income_M":  net_income,
+        "ebitda_M":      ebitda,
+        "total_debt_M":  total_debt,
+        "cash_M":        cash,
+        "fiscal_year":   info.get("mostRecentQuarter", "N/A"),
+        "note": "All _M values in millions of the company's reporting currency.",
+    }
     
