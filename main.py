@@ -88,3 +88,13 @@ DEMO_QUESTIONS = [
     "Convert SEB bank's annual revenue from USD to EUR.",
     "Compare the debt levels of AAPL and TSLA relative to their EBITDA.",
 ]
+
+def run_demo(agent: FinancialAgent, show_trace: bool):
+    print(bold(f"\nRunning {len(DEMO_QUESTIONS)} demo questions...\n"))
+    for i, q in enumerate(DEMO_QUESTIONS, 1):
+        print(cyan(f"\n[{i}/{len(DEMO_QUESTIONS)}] {q}"))
+        resp = agent.run(q)
+        print_response(resp, show_trace)
+        print_memory_stats(agent)
+        if i < len(DEMO_QUESTIONS):
+            time.sleep(1)
