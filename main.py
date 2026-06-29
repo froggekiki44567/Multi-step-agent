@@ -28,3 +28,47 @@ def print_header():
     print(bold("│   ReAct Agent  ·  Anthropic Claude       │"))
     print(bold("└─────────────────────────────────────────┘"))
     print()
+
+def print_response(resp: AgentResponse, show_trace: bool = False):
+    # indicator
+    q = resp.output_quality
+    risk_colour = {"low": green, "medium": yellow, "high": red}.get(
+        q.hallucination_risk if q else "low", yellow
+    )
+
+    print()
+    print(bold("━" * 50))
+    print(bold("ANSWER"))
+    print(bold("━" * 50))
+    print(resp.answer)
+    print()
+
+    # Metadata
+    tools_str = ", ".join(resp.tools_called) if resp.tools_called else "none"
+    print(dim(f"Tools used : {tools_str}"))
+    print(dim(f"Iterations : {resp.iterations}"))
+    print(dim(f"Latency    : {resp.latency_ms:.0f} ms"))
+
+    if q:
+        quality_bar = "█" * int(q.score * 10) + "░" * (10 - int(q.score * 10))
+        print(
+            dim(f"Quality    : ")
+            + risk_colour(f"{quality_bar}  {q.score:.0%}  [{q.hallucination_risk} hallucination risk]")
+        )
+        if q.issues:
+            for issue in q.issues:
+                print(yellow(f"  ⚠ {issue}"))
+
+    if resp.input_check and resp.input_check.flags:
+        for flag in resp.input_check.flags:
+            print(yellow(f"  ⚑ input flag: {flag}"))
+
+    if show_trace and resp.steps:
+        print()
+        print(dim("━" * 50))
+        print(dim("REASONING TRACE"))
+        print(dim("━" * 50))
+        for step in resp.steps:
+            print(dim(step))
+
+    print()
