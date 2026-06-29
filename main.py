@@ -98,3 +98,58 @@ def run_demo(agent: FinancialAgent, show_trace: bool):
         print_memory_stats(agent)
         if i < len(DEMO_QUESTIONS):
             time.sleep(1)
+
+REPL_HELP = """
+Commands:
+  /reset    — clear conversation memory
+  /stats    — show memory stats
+  /trace    — toggle reasoning trace
+  /tools    — list available tools
+  /quit     — exit
+  /help     — show this message
+"""
+
+def run_repl(agent: FinancialAgent):
+    from tools import TOOL_SCHEMAS
+
+    show_trace = False
+    print(cyan("\nType a financial question. /help for commands.\n"))
+
+    while True:
+        try:
+            user_input = input(bold("You › ")).strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nBye.")
+            break
+
+        if not user_input:
+            continue
+
+        # Commands
+        if user_input.startswith("/"):
+            cmd = user_input.lower()
+            if cmd == "/quit":
+                print("Bye.")
+                break
+            elif cmd == "/reset":
+                agent.reset()
+                print(green("Memory cleared."))
+            elif cmd == "/stats":
+                print(json.dumps(agent.memory_stats, indent=2))
+            elif cmd == "/trace":
+                show_trace = not show_trace
+                print(green(f"Trace: {'ON' if show_trace else 'OFF'}"))
+            elif cmd == "/tools":
+                for t in TOOL_SCHEMAS:
+                    print(f"  {bold(t['name'])}: {t['description'][:80]}...")
+            elif cmd == "/help":
+                print(REPL_HELP)
+            else:
+                print(red(f"Unknown command: {user_input}"))
+            continue
+
+        # Query
+        print(dim("Thinking..."))
+        resp = agent.run(user_input)
+        print_response(resp, show_trace)
+        print_memory_stats(agent)
