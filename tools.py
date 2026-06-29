@@ -1,6 +1,7 @@
 from typing import Optional, Any
 import yfinance as yf
 import time
+from datetime import datetime
 
 _cache: dict[str, dict] = {}
 _CACHE_TTL = 300
@@ -140,4 +141,26 @@ def calculate(expression: str) -> dict[str, Any]:
         }
     except Exception as e:
         return {"error": str(e), "expression": expression}
+    
+def get_exchange_rate(from_currency: str, to_currency: str) -> dict[str, Any]:
+    fc = from_currency.upper().strip()
+    tc = to_currency.upper().strip()
+
+    if fc == tc:
+        return {"from": fc, "to": tc, "rate": 1.0}
+
+    rate = _EXCHANGE_RATES.get((fc, tc))
+    if rate is None:
+        inv = _EXCHANGE_RATES.get((tc, fc))
+        if inv:
+            rate = round(1 / inv, 6)
+        else:
+            return {"error": f"Exchange rate {fc}/{tc} not available. Supported: USD, EUR, GBP, SEK, DKK."}
+
+    return {
+        "from":      fc,
+        "to":        tc,
+        "rate":      rate,
+        "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
+    }
     
