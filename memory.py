@@ -69,3 +69,24 @@ Output your final answer prefixed with: FINAL ANSWER:"""
         self.tool_calls_total += 1
         content = f"[Tool: {tool_name}]\n{json.dumps(result, indent=2)}"
         self.messages.append(Message(role="tool", content=content))
+
+    def get_context(self) -> list[dict]:
+        """Return messages in Anthropic API format."""
+        return [m.to_api_format() for m in self.messages]
+
+    def get_token_estimate(self) -> int:
+        return sum(m.token_estimate for m in self.messages)
+
+    def _maybe_compress(self):
+        """Drop oldest non-system messages if over budget."""
+        while self.get_token_estimate() > self.max_tokens and len(self.messages) > 3:
+            for i, msg in enumerate(self.messages):
+                if msg.role != "system":
+                    removed = self.messages.pop(i)
+                    if i == 1:
+                        notice = Message(
+                            role="assistant",
+                            content="[Context compressed: earlier messages were dropped to fit the context window.]",
+                        )
+                        self.messages.insert(1, notice)
+                    break
