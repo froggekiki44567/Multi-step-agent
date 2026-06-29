@@ -65,3 +65,11 @@ def check_input(user_query: str) -> InputCheckResult:
         )
 
     return InputCheckResult(allowed=True, confidence=1.0, flags=flags)
+
+@dataclass
+class OutputQualityReport:
+    passed: bool
+    score: float            # 0.0 – 1.0
+    hallucination_risk: str  # "low" | "medium" | "high"
+    issues: list[str] = field(default_factory=list)
+    suggestions: list[str] = field(default_factory=list)
