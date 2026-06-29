@@ -163,4 +163,74 @@ def get_exchange_rate(from_currency: str, to_currency: str) -> dict[str, Any]:
         "rate":      rate,
         "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
     }
-    
+
+def summarize_risk(ticker: str) -> dict[str, Any]:
+    data = query_financials(ticker)
+    if "error" in data:
+        return data
+
+    flags  = []
+    score  = 0
+
+    revenue    = data.get("revenue_M")    or 0
+    net_income = data.get("net_income_M") or 0
+    ebitda     = data.get("ebitda_M")     or 0
+    debt       = data.get("total_debt_M") or 0
+    cash       = data.get("cash_M")       or 0
+    sector     = data.get("sector", "")
+
+    # Debt / EBITDA
+    if ebitda > 0:
+        de = debt / ebitda
+        if de > 6:
+            flags.append(f"Debt/EBITDA critically high: {de:.1f}x")
+            score += 35
+        elif de > 4:
+            flags.append(f"Debt/EBITDA elevated: {de:.1f}x")
+            score += 20
+        elif de > 2:
+            score += 8
+
+    # Net margin
+    if revenue > 0:
+        margin = (net_income / revenue) * 100
+        if margin < 0:
+            flags.append(f"Negative net margin: {margin:.1f}%")
+            score += 30
+        elif margin < 5:
+            flags.append(f"Thin net margin: {margin:.1f}%")
+            score += 15
+        elif margin > 25:
+            flags.append(f"Strong net margin: {margin:.1f}%")
+
+    # Cash coverage
+    if debt > 0:
+        cov = cash / debt
+        if cov < 0.05:
+            flags.append(f"Very low cash coverage: {cov:.1%} of debt")
+            score += 20
+        elif cov < 0.15:
+            flags.append(f"Low cash coverage: {cov:.1%} of debt")
+            score += 10
+
+    # Sector adjustment
+    if "financial" in sector.lower() or "bank" in sector.lower():
+        flags.append("Financial sector: high leverage is structural")
+        score = max(0, score - 15)
+
+    score = min(score, 100)
+    tier  = (
+        "Low"      if score < 20 else
+        "Medium"   if score < 45 else
+        "High"     if score < 70 else
+        "Critical"
+    )
+
+    return {
+        "ticker":       ticker.upper(),
+        "name":         data.get("name"),
+        "risk_score":   score,
+        "risk_tier":    tier,
+        "flags":        flags if flags else ["No major risk flags detected"],
+        "assessed_at":  datetime.utcnow().isoformat() + "Z",
+    } 
