@@ -234,3 +234,21 @@ def summarize_risk(ticker: str) -> dict[str, Any]:
         "flags":        flags if flags else ["No major risk flags detected"],
         "assessed_at":  datetime.utcnow().isoformat() + "Z",
     } 
+
+TOOL_MAP = {
+    "query_financials": query_financials,
+    "calculate":        calculate,
+    "get_exchange_rate": get_exchange_rate,
+    "summarize_risk":   summarize_risk,
+}
+
+
+def dispatch(tool_name: str, args: dict) -> dict:
+    fn = TOOL_MAP.get(tool_name)
+    if fn is None:
+        return {"error": f"Unknown tool: '{tool_name}'"}
+    try:
+        return fn(**args)
+    except TypeError as e:
+        return {"error": f"Bad arguments for '{tool_name}': {e}"}
+
