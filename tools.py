@@ -242,19 +242,30 @@ def summarize_risk(ticker: str) -> dict[str, Any]:
         "Critical"
     )
 
-    return {
+    result = {
         "ticker":       ticker.upper(),
         "name":         data.get("name"),
         "risk_score":   score,
         "risk_tier":    tier,
         "flags":        flags if flags else ["No major risk flags detected"],
         "assessed_at":  datetime.utcnow().isoformat() + "Z",
-    } 
+    }
+    vectorstore.upsert_financial_data(result["ticker"], result, kind="risk")
+    return result
+
+
+def search_knowledge_base(query: str) -> dict[str, Any]:
+    matches = vectorstore.search(query)
+    if not matches:
+        return {"query": query, "matches": [], "note": "Knowledge base is empty — no data fetched yet."}
+    return {"query": query, "matches": matches}
+
 
 TOOL_MAP = {
     "query_financials": query_financials,
     "calculate":        calculate,
     "get_exchange_rate": get_exchange_rate,
+    "search_knowledge_base": search_knowledge_base,
     "summarize_risk":   summarize_risk,
 }
 
