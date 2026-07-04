@@ -3,6 +3,8 @@ import yfinance as yf
 import time
 from datetime import datetime, timezone
 
+import vectorstore
+
 _cache: dict[str, dict] = {}
 _CACHE_TTL = 300
 
@@ -85,6 +87,18 @@ TOOL_SCHEMAS = [
             "ticker": "string — company ticker to assess"
         },
     },
+    {
+        "name": "search_knowledge_base",
+        "description": (
+            "Semantically search previously fetched financial data snapshots "
+            "(from query_financials / summarize_risk calls, including past sessions). "
+            "Useful for questions like 'which companies had high debt risk' or "
+            "'what have I looked at in the financial sector' without knowing exact tickers."
+        ),
+        "parameters": {
+            "query": "string — natural language description of what to look for",
+        },
+    },
 ]
 
 def query_financials(ticker: str) -> dict[str, Any]:
@@ -109,7 +123,7 @@ def query_financials(ticker: str) -> dict[str, Any]:
     price      = info.get("currentPrice") or info.get("regularMarketPrice")
     mkt_cap    = _m(info.get("marketCap"))
 
-    return {
+    result = {
         "ticker":      ticker.upper(),
         "name":        info.get("shortName") or info.get("longName", "N/A"),
         "sector":      info.get("sector", "N/A"),
@@ -124,6 +138,8 @@ def query_financials(ticker: str) -> dict[str, Any]:
         "fiscal_year":   info.get("mostRecentQuarter", "N/A"),
         "note": "All _M values in millions of the company's reporting currency.",
     }
+    vectorstore.upsert_financial_data(result["ticker"], result)
+    return result
 
 def calculate(expression: str) -> dict[str, Any]:
     allowed_chars = set("0123456789+-*/.() ")

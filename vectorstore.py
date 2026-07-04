@@ -56,24 +56,29 @@ def _to_document(ticker: str, data: dict[str, Any]) -> str:
     return " | ".join(parts)
 
 
-def upsert_financial_data(ticker: str, data: dict[str, Any]) -> None:
-    """Store/update a snapshot of tool output for a ticker."""
+def upsert_financial_data(ticker: str, data: dict[str, Any], kind: str = "financials") -> None:
+    """Store/update a snapshot of tool output for a ticker.
+
+    `kind` disambiguates snapshot types (e.g. "financials" vs "risk") so a
+    risk assessment doesn't overwrite the richer query_financials snapshot.
+    """
     ticker = ticker.upper().strip()
     if "error" in data:
         return
 
     collection = _get_collection()
     document = _to_document(ticker, data)
+    doc_id = f"{ticker}:{kind}"
     # Metadata values must be str/int/float/bool for chromadb.
-    metadata = {"ticker": ticker, "raw_json": json.dumps(data)}
+    metadata = {"ticker": ticker, "kind": kind, "raw_json": json.dumps(data)}
 
-    collection.upsert(ids=[ticker], documents=[document], metadatas=[metadata])
+    collection.upsert(ids=[doc_id], documents=[document], metadatas=[metadata])
 
 
-def get_by_ticker(ticker: str) -> Optional[dict[str, Any]]:
+def get_by_ticker(ticker: str, kind: str = "financials") -> Optional[dict[str, Any]]:
     """Exact-match lookup of the last stored snapshot for a ticker."""
     collection = _get_collection()
-    result = collection.get(ids=[ticker.upper().strip()])
+    result = collection.get(ids=[f"{ticker.upper().strip()}:{kind}"])
     if not result["ids"]:
         return None
     return json.loads(result["metadatas"][0]["raw_json"])
